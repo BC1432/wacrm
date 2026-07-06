@@ -5,7 +5,8 @@
 -- ============================================================
 
 -- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+SET search_path = public, extensions;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA extensions;
 
 -- ============================================================
 -- PROFILES

@@ -72,8 +72,8 @@ ALTER TABLE messages
   ADD COLUMN IF NOT EXISTS interactive_reply_id TEXT;
 
 -- ============================================================
--- 2. flows
--- ============================================================
+SET search_path = public, extensions;
+
 CREATE TABLE IF NOT EXISTS flows (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,

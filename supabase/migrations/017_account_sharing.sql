@@ -55,8 +55,8 @@ BEGIN
 END $$;
 
 -- ============================================================
--- ACCOUNTS
--- ============================================================
+SET search_path = public, extensions;
+
 CREATE TABLE IF NOT EXISTS accounts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,

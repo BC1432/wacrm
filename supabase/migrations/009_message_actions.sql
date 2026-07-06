@@ -36,9 +36,8 @@ CREATE INDEX IF NOT EXISTS idx_messages_reply_to
   ON messages(reply_to_message_id)
   WHERE reply_to_message_id IS NOT NULL;
 
--- ============================================================
--- 2. message_reactions
--- ============================================================
+SET search_path = public, extensions;
+
 CREATE TABLE IF NOT EXISTS message_reactions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
