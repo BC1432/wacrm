@@ -1,0 +1,47 @@
+name: Deploy Cloudflare Workers
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: workers-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy Worker
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+      META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
+      NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+      ALLOWED_INVITE_HOSTS: ${{ secrets.ALLOWED_INVITE_HOSTS }}
+      AUTOMATION_CRON_SECRET: ${{ secrets.AUTOMATION_CRON_SECRET }}
+      META_APP_ID: ${{ secrets.META_APP_ID }}
+      WHATSAPP_TEMPLATES_DRY_RUN: ${{ secrets.WHATSAPP_TEMPLATES_DRY_RUN }}
+      AI_REQUEST_TIMEOUT_MS: ${{ secrets.AI_REQUEST_TIMEOUT_MS }}
+      AI_CONTEXT_MESSAGE_LIMIT: ${{ secrets.AI_CONTEXT_MESSAGE_LIMIT }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build and deploy
+        run: npm run deploy:workers

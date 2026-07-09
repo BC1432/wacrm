@@ -1,4 +1,8 @@
-import type { NextConfig } from "next";
+import path from 'node:path';
+import type { NextConfig } from 'next';
+
+const isStaticExport = process.env.NEXT_OUTPUT === 'export';
+const githubPagesBasePath = process.env.GITHUB_PAGES_BASE_PATH ?? '';
 
 /**
  * Baseline security headers applied to every response.
@@ -18,22 +22,22 @@ import type { NextConfig } from "next";
  */
 const SECURITY_HEADERS = [
   {
-    key: "Strict-Transport-Security",
-    value: "max-age=63072000; includeSubDomains; preload",
+    key: 'Strict-Transport-Security',
+    value: 'max-age=63072000; includeSubDomains; preload',
   },
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "X-Frame-Options", value: "DENY" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   {
     // Microphone is allowed for same-origin (`self`) so the inbox
     // composer can record voice notes via MediaRecorder. Everything
     // else stays denied — a compromised dependency can't silently grab
     // the camera / geolocation / etc.
-    key: "Permissions-Policy",
-    value: "camera=(), microphone=(self), geolocation=(), payment=(), usb=()",
+    key: 'Permissions-Policy',
+    value: 'camera=(), microphone=(self), geolocation=(), payment=(), usb=()',
   },
   {
-    key: "Content-Security-Policy-Report-Only",
+    key: 'Content-Security-Policy-Report-Only',
     value: [
       "default-src 'self'",
       // Next.js needs 'unsafe-inline' for its inline hydration script
@@ -56,11 +60,29 @@ const SECURITY_HEADERS = [
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
-    ].join("; "),
+    ].join('; '),
   },
 ] as const;
 
 const nextConfig: NextConfig = {
+  ...(isStaticExport
+    ? {
+        output: 'export' as const,
+        trailingSlash: true,
+        images: {
+          unoptimized: true,
+        },
+        ...(githubPagesBasePath
+          ? {
+              basePath: githubPagesBasePath,
+              assetPrefix: `${githubPagesBasePath}/`,
+            }
+          : {}),
+      }
+    : {}),
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   /**
    * Cache-Control policy.
    *
@@ -98,31 +120,35 @@ const nextConfig: NextConfig = {
    * they apply to every response regardless of which cache rule
    * matched.
    */
-  async headers() {
-    return [
-      {
-        source: "/api/:path*",
-        headers: [{ key: "Cache-Control", value: "no-store" }],
-      },
-      {
-        source: "/:path((?!_next/static|_next/image|api).*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value:
-              "public, max-age=0, s-maxage=300, stale-while-revalidate=86400",
-          },
-        ],
-      },
-      {
-        // Security headers on every response, including /_next/static
-        // assets (nosniff matters there) and /api/* (HSTS + referrer-
-        // policy don't hurt).
-        source: "/:path*",
-        headers: [...SECURITY_HEADERS],
-      },
-    ];
-  },
+  ...(isStaticExport
+    ? {}
+    : {
+        async headers() {
+          return [
+            {
+              source: '/api/:path*',
+              headers: [{ key: 'Cache-Control', value: 'no-store' }],
+            },
+            {
+              source: '/:path((?!_next/static|_next/image|api).*)',
+              headers: [
+                {
+                  key: 'Cache-Control',
+                  value:
+                    'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
+                },
+              ],
+            },
+            {
+              // Security headers on every response, including /_next/static
+              // assets (nosniff matters there) and /api/* (HSTS + referrer-
+              // policy don't hurt).
+              source: '/:path*',
+              headers: [...SECURITY_HEADERS],
+            },
+          ];
+        },
+      }),
 };
 
 export default nextConfig;

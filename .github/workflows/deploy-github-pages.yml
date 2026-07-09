@@ -1,0 +1,57 @@
+name: Deploy GitHub Pages
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Build and deploy static export
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+      META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Detect GitHub Pages base path
+        shell: bash
+        run: |
+          repo_name="${GITHUB_REPOSITORY#*/}"
+          owner_lc="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          repo_lc="$(printf '%s' "$repo_name" | tr '[:upper:]' '[:lower:]')"
+          if [ "$repo_lc" != "$owner_lc.github.io" ]; then
+            echo "GITHUB_PAGES_BASE_PATH=/$repo_name" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        run: npm run build:github-pages
+
+      - name: Keep GitHub Pages from ignoring _next
+        run: touch out/.nojekyll
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: out
+
+      - uses: actions/deploy-pages@v4
