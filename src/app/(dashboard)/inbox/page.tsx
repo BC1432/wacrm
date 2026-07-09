@@ -9,6 +9,7 @@ import {
 } from "@/lib/inbox/conversations";
 import type { Conversation, Message, Contact, ConversationStatus } from "@/types";
 import { useRealtime } from "@/hooks/use-realtime";
+import { useI18n } from "@/hooks/use-language";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { MessageThread } from "@/components/inbox/message-thread";
 import { ContactSidebar } from "@/components/inbox/contact-sidebar";
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
 const CONTACT_PANEL_STORAGE_KEY = "wacrm:inbox:contact-panel-open";
 
 export default function InboxPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   /**
@@ -556,7 +558,7 @@ export default function InboxPage() {
         <div className="flex shrink-0 items-center justify-center gap-2 border-b border-amber-500/20 bg-amber-500/10 px-4 py-2">
           <WifiOff className="h-4 w-4 text-amber-400" />
           <p className="text-xs text-amber-400">
-            WhatsApp® is not connected. Go to Settings to connect your account.
+            {t("inbox.whatsappNotConnected")}
           </p>
         </div>
       )}

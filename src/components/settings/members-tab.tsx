@@ -64,6 +64,7 @@ import {
 } from '@/components/ui/select';
 import { RequireRole } from '@/components/auth/require-role';
 import { useAuth } from '@/hooks/use-auth';
+import { useI18n } from '@/hooks/use-language';
 import { usePresence } from '@/hooks/use-presence';
 import type { AccountRole } from '@/lib/auth/roles';
 import { presenceLabel, summarize } from '@/lib/presence';
@@ -125,6 +126,7 @@ function fmtExpiresIn(iso: string): string {
 }
 
 export function MembersTab() {
+  const { t } = useI18n();
   const { user, canManageMembers } = useAuth();
   const { getPresence, getRow, now } = usePresence();
 
@@ -441,7 +443,7 @@ export function MembersTab() {
                         className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium ${roleMeta.className}`}
                       >
                         <RoleIcon className="size-3.5" />
-                        {roleMeta.label}
+                        {t(roleMeta.labelKey)}
                       </span>
                     )}
 
@@ -530,7 +532,7 @@ export function MembersTab() {
                             className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium ${inviteRoleMeta.className}`}
                           >
                             <InviteRoleIcon className="size-3" />
-                            {inviteRoleMeta.label}
+                            {t(inviteRoleMeta.labelKey)}
                           </span>
                         </div>
                         <p className="mt-0.5 text-xs text-muted-foreground">

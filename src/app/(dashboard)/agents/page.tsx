@@ -5,10 +5,12 @@ import { Bot, Sparkles, Settings2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AiPlayground } from '@/components/agents/ai-playground';
 import { AiConfig } from '@/components/settings/ai-config';
+import { useI18n } from '@/hooks/use-language';
 
 type Tab = 'playground' | 'setup';
 
 export default function AgentsPage() {
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>('playground');
   const [decided, setDecided] = useState(false);
 
@@ -36,12 +38,11 @@ export default function AgentsPage() {
       <div className="flex items-center gap-2">
         <Bot className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          AI Agents
+          {t('nav.aiAgents')}
         </h1>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Your bring-your-own-key AI agent — set it up, then test it in the
-        playground before it replies to customers in the inbox.
+        {t('agents.pageDescription')}
       </p>
 
       {decided && (
@@ -52,10 +53,10 @@ export default function AgentsPage() {
         >
           <TabsList>
             <TabsTrigger value="playground">
-              <Sparkles className="mr-1.5 h-4 w-4" /> Playground
+              <Sparkles className="mr-1.5 h-4 w-4" /> {t('agents.playground')}
             </TabsTrigger>
             <TabsTrigger value="setup">
-              <Settings2 className="mr-1.5 h-4 w-4" /> Setup
+              <Settings2 className="mr-1.5 h-4 w-4" /> {t('agents.setup')}
             </TabsTrigger>
           </TabsList>
 

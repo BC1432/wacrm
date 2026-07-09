@@ -34,10 +34,38 @@ import {
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useI18n } from '@/hooks/use-language';
+import type { Translator } from '@/hooks/use-language';
 import {
   getBroadcastStatus,
   getRecipientStatus,
 } from '@/lib/broadcast-status';
+
+/**
+ * DB status value → i18n key. Labels resolve with `t()` at render time;
+ * the broadcast-status lib still supplies classes/pulse. Fallbacks
+ * ("draft" / "pending") mirror the lib's own tolerant lookup.
+ */
+const BROADCAST_STATUS_KEYS: Record<string, string> = {
+  draft: 'broadcasts.status.draft',
+  scheduled: 'broadcasts.status.scheduled',
+  sending: 'broadcasts.status.sending',
+  sent: 'broadcasts.status.sent',
+  failed: 'broadcasts.status.failed',
+};
+
+const RECIPIENT_STATUS_KEYS: Record<string, string> = {
+  pending: 'broadcasts.recipientStatus.pending',
+  sent: 'broadcasts.recipientStatus.sent',
+  delivered: 'broadcasts.recipientStatus.delivered',
+  read: 'broadcasts.recipientStatus.read',
+  replied: 'broadcasts.recipientStatus.replied',
+  failed: 'broadcasts.recipientStatus.failed',
+};
+
+function recipientStatusLabel(t: Translator, status: string): string {
+  return t(RECIPIENT_STATUS_KEYS[status] ?? 'broadcasts.recipientStatus.pending');
+}
 
 interface StatCardProps {
   label: string;
@@ -75,10 +103,13 @@ interface FunnelStep {
  * always render a full bar at the top and proportional tails.
  */
 function FunnelChart({ steps }: { steps: FunnelStep[] }) {
+  const { t } = useI18n();
   const max = Math.max(...steps.map((s) => s.value), 1);
   return (
     <div className="rounded-xl border border-border bg-card p-4">
-      <h3 className="mb-4 text-sm font-medium text-foreground">Funnel</h3>
+      <h3 className="mb-4 text-sm font-medium text-foreground">
+        {t('broadcasts.detail.funnel')}
+      </h3>
       <div className="space-y-2">
         {steps.map((step) => {
           const pctOfMax = Math.max(5, Math.round((step.value / max) * 100));
@@ -144,6 +175,7 @@ function downloadBlob(filename: string, content: string) {
 export default function BroadcastDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useI18n();
   const broadcastId = params.id as string;
 
   const [broadcast, setBroadcast] = useState<Broadcast | null>(null);
@@ -179,7 +211,9 @@ export default function BroadcastDetailPage() {
         if (recsError) throw recsError;
         setRecipients(recs ?? []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load broadcast');
+        setError(
+          err instanceof Error ? err.message : t('broadcasts.detail.loadError'),
+        );
       } finally {
         setLoading(false);
       }
@@ -199,14 +233,14 @@ export default function BroadcastDetailPage() {
   function handleExport() {
     if (!broadcast) return;
     const header = [
-      'Contact',
-      'Phone',
-      'Status',
-      'Sent At',
-      'Delivered At',
-      'Read At',
-      'Replied At',
-      'Error',
+      t('broadcasts.detail.csv.contact'),
+      t('broadcasts.detail.csv.phone'),
+      t('broadcasts.detail.csv.status'),
+      t('broadcasts.detail.csv.sentAt'),
+      t('broadcasts.detail.csv.deliveredAt'),
+      t('broadcasts.detail.csv.readAt'),
+      t('broadcasts.detail.csv.repliedAt'),
+      t('broadcasts.detail.csv.error'),
     ];
     const rows = recipients.map((r) => [
       r.contact?.name ?? '',
@@ -236,10 +270,12 @@ export default function BroadcastDetailPage() {
       .eq('id', broadcastId);
     setDeleting(false);
     if (delErr) {
-      toast.error(`Failed to delete: ${delErr.message}`);
+      toast.error(
+        t('broadcasts.detail.deleteFailed', { message: delErr.message }),
+      );
       return;
     }
-    toast.success('Broadcast deleted');
+    toast.success(t('broadcasts.detail.deleted'));
     router.push('/broadcasts');
   }
 
@@ -254,9 +290,11 @@ export default function BroadcastDetailPage() {
   if (error || !broadcast) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-2">
-        <p className="text-sm text-red-400">{error ?? 'Broadcast not found'}</p>
+        <p className="text-sm text-red-400">
+          {error ?? t('broadcasts.detail.notFound')}
+        </p>
         <Button variant="outline" onClick={() => router.push('/broadcasts')}>
-          Back to Broadcasts
+          {t('broadcasts.detail.backToList')}
         </Button>
       </div>
     );
@@ -265,10 +303,26 @@ export default function BroadcastDetailPage() {
   const status = getBroadcastStatus(broadcast.status);
 
   const funnelSteps: FunnelStep[] = [
-    { label: 'Sent', value: broadcast.sent_count, color: 'bg-primary' },
-    { label: 'Delivered', value: broadcast.delivered_count, color: 'bg-teal-500' },
-    { label: 'Read', value: broadcast.read_count, color: 'bg-blue-500' },
-    { label: 'Replied', value: broadcast.replied_count, color: 'bg-indigo-500' },
+    {
+      label: t('broadcasts.detail.sent'),
+      value: broadcast.sent_count,
+      color: 'bg-primary',
+    },
+    {
+      label: t('broadcasts.detail.delivered'),
+      value: broadcast.delivered_count,
+      color: 'bg-teal-500',
+    },
+    {
+      label: t('broadcasts.detail.read'),
+      value: broadcast.read_count,
+      color: 'bg-blue-500',
+    },
+    {
+      label: t('broadcasts.detail.replied'),
+      value: broadcast.replied_count,
+      color: 'bg-indigo-500',
+    },
   ];
 
   return (

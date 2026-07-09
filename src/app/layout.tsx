@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/use-theme";
+import { LanguageProvider } from "@/hooks/use-language";
 import { ThemedToaster } from "@/components/themed-toaster";
 import {
   DEFAULT_MODE,
@@ -12,6 +13,11 @@ import {
   STORAGE_KEY,
   THEME_IDS,
 } from "@/lib/themes";
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_STORAGE_KEY,
+  LANGUAGES,
+} from "@/lib/i18n/config";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -44,8 +50,8 @@ export const viewport: Viewport = {
 };
 
 // Inline boot script — runs before React hydrates so the user's
-// chosen accent (data-theme) AND mode (data-mode) are on the <html>
-// element before first paint. Without this every page load flashes
+// chosen accent (data-theme), mode (data-mode) AND language (lang)
+// are on the <html> element before first paint. Without this every page load flashes
 // the server-rendered defaults for a frame before the React tree
 // mounts and applies the picked values.
 //
@@ -68,9 +74,16 @@ const THEME_BOOT_SCRIPT = `
     var MODES = ${JSON.stringify(MODES)};
     var savedMode = localStorage.getItem(MODE_KEY);
     d.dataset.mode = MODES.indexOf(savedMode) !== -1 ? savedMode : MODE_DEFAULT;
+
+    var LANG_KEY = ${JSON.stringify(LANGUAGE_STORAGE_KEY)};
+    var LANG_DEFAULT = ${JSON.stringify(DEFAULT_LANGUAGE)};
+    var LANGS = ${JSON.stringify(LANGUAGES)};
+    var savedLang = localStorage.getItem(LANG_KEY);
+    d.lang = LANGS.indexOf(savedLang) !== -1 ? savedLang : LANG_DEFAULT;
   } catch (_e) {
     d.dataset.theme = ${JSON.stringify(DEFAULT_THEME)};
     d.dataset.mode = ${JSON.stringify(DEFAULT_MODE)};
+    d.lang = ${JSON.stringify(DEFAULT_LANGUAGE)};
   }
 })();
 `;
@@ -104,8 +117,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-full bg-background text-foreground font-sans">
         <ThemeProvider>
-          {children}
-          <ThemedToaster />
+          <LanguageProvider>
+            {children}
+            <ThemedToaster />
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

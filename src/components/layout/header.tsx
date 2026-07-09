@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-language";
 import { LogOut, Menu, Settings as SettingsIcon, User } from "lucide-react";
 import {
   Avatar,
@@ -18,23 +19,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/layout/mode-toggle";
 
-const pageTitles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/inbox": "Inbox",
-  "/notifications": "Notifications",
-  "/contacts": "Contacts",
-  "/pipelines": "Pipelines",
-  "/broadcasts": "Broadcasts",
-  "/automations": "Automations",
-  "/settings": "Settings",
+// Maps each section to its `nav.*` i18n key — resolved with `t()` at
+// render time so the title follows the active language.
+const pageTitleKeys: Record<string, string> = {
+  "/dashboard": "nav.dashboard",
+  "/inbox": "nav.inbox",
+  "/notifications": "nav.notifications",
+  "/contacts": "nav.contacts",
+  "/pipelines": "nav.pipelines",
+  "/broadcasts": "nav.broadcasts",
+  "/automations": "nav.automations",
+  "/settings": "nav.settings",
 };
 
-function getPageTitle(pathname: string): string {
-  if (pageTitles[pathname]) return pageTitles[pathname];
-  const match = Object.entries(pageTitles).find(([path]) =>
+function getPageTitleKey(pathname: string): string {
+  if (pageTitleKeys[pathname]) return pageTitleKeys[pathname];
+  const match = Object.entries(pageTitleKeys).find(([path]) =>
     pathname.startsWith(path),
   );
-  return match ? match[1] : "Dashboard";
+  return match ? match[1] : "nav.dashboard";
 }
 
 interface HeaderProps {
@@ -45,8 +48,9 @@ interface HeaderProps {
 
 export function Header({ onOpenSidebar }: HeaderProps) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const { profile, signOut } = useAuth();
-  const title = getPageTitle(pathname);
+  const title = t(getPageTitleKey(pathname));
 
   const initial =
     profile?.full_name?.charAt(0)?.toUpperCase() ??
@@ -60,7 +64,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         <button
           type="button"
           onClick={onOpenSidebar}
-          aria-label="Open menu"
+          aria-label={t("header.openMenu")}
           className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:hidden"
         >
           <Menu className="h-5 w-5" />
@@ -76,7 +80,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         <DropdownMenu>
         <DropdownMenuTrigger
           className="flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-muted/70 focus:bg-muted/70 focus:outline-none data-popup-open:bg-muted/70 sm:gap-3 sm:pl-1 sm:pr-3"
-          aria-label="Open account menu"
+          aria-label={t("header.openAccountMenu")}
         >
           <Avatar className="size-8">
             {profile?.avatar_url ? (
@@ -90,7 +94,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             </AvatarFallback>
           </Avatar>
           <span className="hidden text-sm font-medium text-foreground sm:inline">
-            {profile?.full_name ?? "User"}
+            {profile?.full_name ?? t("common.user")}
           </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -100,7 +104,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         >
           <div className="px-2 py-1.5">
             <p className="truncate text-sm font-medium text-foreground">
-              {profile?.full_name ?? "User"}
+              {profile?.full_name ?? t("common.user")}
             </p>
             <p className="truncate text-xs text-muted-foreground">
               {profile?.email ?? ""}
@@ -116,7 +120,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             }
           >
             <User className="size-4" />
-            Profile
+            {t("sidebar.profile")}
           </DropdownMenuItem>
           <DropdownMenuItem
             render={
@@ -127,7 +131,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             }
           >
             <SettingsIcon className="size-4" />
-            Settings
+            {t("sidebar.settings")}
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-border" />
           <DropdownMenuItem
@@ -135,7 +139,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             className="text-popover-foreground focus:bg-accent focus:text-accent-foreground"
           >
             <LogOut className="size-4" />
-            Sign out
+            {t("sidebar.signOut")}
           </DropdownMenuItem>
         </DropdownMenuContent>
         </DropdownMenu>

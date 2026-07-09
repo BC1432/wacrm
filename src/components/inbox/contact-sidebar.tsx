@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-language";
 import { cn } from "@/lib/utils";
 import type { Contact, Deal, ContactNote, Tag } from "@/types";
 import {
@@ -19,12 +20,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
+import { es as esLocale } from "date-fns/locale";
 
 interface ContactSidebarProps {
   contact: Contact | null;
 }
 
 export function ContactSidebar({ contact }: ContactSidebarProps) {
+  const { t, language } = useI18n();
   const { accountId } = useAuth();
   const [copied, setCopied] = useState(false);
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -118,7 +121,7 @@ export function ContactSidebar({ contact }: ContactSidebarProps) {
   if (!contact) {
     return (
       <div className="flex h-full w-70 items-center justify-center border-l border-border bg-card">
-        <p className="text-sm text-muted-foreground">Select a conversation</p>
+        <p className="text-sm text-muted-foreground">{t("inbox.selectConversation")}</p>
       </div>
     );
   }
@@ -181,11 +184,11 @@ export function ContactSidebar({ contact }: ContactSidebarProps) {
           <div>
             <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <TagIcon className="h-3 w-3" />
-              Tags
+              {t("inbox.tags")}
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
               {tags.length === 0 ? (
-                <p className="px-1 text-xs text-muted-foreground">No tags</p>
+                <p className="px-1 text-xs text-muted-foreground">{t("inbox.noTags")}</p>
               ) : (
                 tags.map((tag) => (
                   <span
@@ -210,11 +213,11 @@ export function ContactSidebar({ contact }: ContactSidebarProps) {
           <div>
             <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <DollarSign className="h-3 w-3" />
-              Active Deals
+              {t("inbox.activeDeals")}
             </div>
             <div className="mt-2 space-y-2">
               {deals.length === 0 ? (
-                <p className="px-1 text-xs text-muted-foreground">No deals</p>
+                <p className="px-1 text-xs text-muted-foreground">{t("inbox.noDeals")}</p>
               ) : (
                 deals.map((deal) => (
                   <div
@@ -254,14 +257,14 @@ export function ContactSidebar({ contact }: ContactSidebarProps) {
           <div>
             <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <StickyNote className="h-3 w-3" />
-              Notes
+              {t("inbox.notes")}
             </div>
             <div className="mt-2">
               <div className="flex gap-2">
                 <textarea
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
-                  placeholder="Add a note..."
+                  placeholder={t("inbox.addNotePlaceholder")}
                   rows={2}
                   className="flex-1 resize-none rounded-lg border border-border bg-muted px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary/50"
                 />
@@ -285,7 +288,9 @@ export function ContactSidebar({ contact }: ContactSidebarProps) {
                       {note.note_text}
                     </p>
                     <p className="mt-1 text-[10px] text-muted-foreground">
-                      {format(new Date(note.created_at), "MMM d, yyyy HH:mm")}
+                      {format(new Date(note.created_at), "MMM d, yyyy HH:mm", {
+                        locale: language === "es" ? esLocale : undefined,
+                      })}
                     </p>
                   </div>
                 ))}

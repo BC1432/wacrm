@@ -15,8 +15,22 @@ import {
 } from '@/components/ui/table';
 import { Radio, Plus, Loader2 } from 'lucide-react';
 import { useCan } from '@/hooks/use-can';
+import { useI18n } from '@/hooks/use-language';
 import { GatedButton } from '@/components/ui/gated-button';
 import { getBroadcastStatus } from '@/lib/broadcast-status';
+
+/**
+ * DB status value → i18n key. Labels are resolved with `t()` at render
+ * time; `getBroadcastStatus` still supplies classes/pulse. Falls back
+ * to "draft" for unknown values, mirroring the lib's own fallback.
+ */
+const BROADCAST_STATUS_KEYS: Record<string, string> = {
+  draft: 'broadcasts.status.draft',
+  scheduled: 'broadcasts.status.scheduled',
+  sending: 'broadcasts.status.sending',
+  sent: 'broadcasts.status.sent',
+  failed: 'broadcasts.status.failed',
+};
 
 /**
  * Poll cadence while any broadcast is sending. Kept modest so we don't
@@ -58,6 +72,7 @@ function RateCell({
 
 export default function BroadcastsPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const canCreate = useCan('send-messages');
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +92,9 @@ export default function BroadcastsPage() {
       if (fetchError) throw fetchError;
       setBroadcasts(data ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load broadcasts');
+      setError(
+        err instanceof Error ? err.message : t('broadcasts.list.loadError'),
+      );
     } finally {
       setLoading(false);
     }
@@ -141,7 +158,7 @@ export default function BroadcastsPage() {
       <div className="flex h-64 flex-col items-center justify-center gap-2">
         <p className="text-sm text-red-400">{error}</p>
         <Button variant="outline" onClick={() => window.location.reload()}>
-          Retry
+          {t('common.retry')}
         </Button>
       </div>
     );
@@ -154,7 +171,7 @@ export default function BroadcastsPage() {
       {anySending && (
         <div
           role="progressbar"
-          aria-label="Broadcast in progress"
+          aria-label={t('broadcasts.list.inProgress')}
           className="broadcast-indeterminate fixed inset-x-0 top-0 z-40 h-0.5 overflow-hidden bg-muted"
         >
           <div className="broadcast-indeterminate-bar h-0.5 bg-primary" />
@@ -179,9 +196,11 @@ export default function BroadcastsPage() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Broadcasts</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t('nav.broadcasts')}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Send bulk messages to your contacts using approved templates.
+            {t('broadcasts.list.subtitle')}
           </p>
         </div>
         <GatedButton
@@ -191,16 +210,18 @@ export default function BroadcastsPage() {
           className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
-          New Broadcast
+          {t('broadcasts.list.new')}
         </GatedButton>
       </div>
 
       {broadcasts.length === 0 ? (
         <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-border bg-card">
           <Radio className="mb-3 h-10 w-10 text-muted-foreground" />
-          <p className="text-sm font-medium text-foreground">No broadcasts yet</p>
+          <p className="text-sm font-medium text-foreground">
+            {t('broadcasts.list.emptyTitle')}
+          </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Create your first broadcast to reach your contacts at scale.
+            {t('broadcasts.list.emptyDescription')}
           </p>
           <GatedButton
             canAct={canCreate}
@@ -209,7 +230,7 @@ export default function BroadcastsPage() {
             className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            New Broadcast
+            {t('broadcasts.list.new')}
           </GatedButton>
         </div>
       ) : (
@@ -217,15 +238,15 @@ export default function BroadcastsPage() {
           <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-muted-foreground">Name</TableHead>
-                <TableHead className="hidden text-muted-foreground md:table-cell">Template</TableHead>
+                <TableHead className="text-muted-foreground">{t('broadcasts.list.colName')}</TableHead>
+                <TableHead className="hidden text-muted-foreground md:table-cell">{t('broadcasts.list.colTemplate')}</TableHead>
                 <TableHead className="hidden text-right text-muted-foreground sm:table-cell">
-                  Recipients
+                  {t('broadcasts.list.colRecipients')}
                 </TableHead>
-                <TableHead className="hidden text-muted-foreground lg:table-cell">Delivery</TableHead>
-                <TableHead className="hidden text-muted-foreground lg:table-cell">Read</TableHead>
-                <TableHead className="text-muted-foreground">Status</TableHead>
-                <TableHead className="hidden text-muted-foreground sm:table-cell">Date</TableHead>
+                <TableHead className="hidden text-muted-foreground lg:table-cell">{t('broadcasts.list.colDelivery')}</TableHead>
+                <TableHead className="hidden text-muted-foreground lg:table-cell">{t('broadcasts.list.colRead')}</TableHead>
+                <TableHead className="text-muted-foreground">{t('broadcasts.list.colStatus')}</TableHead>
+                <TableHead className="hidden text-muted-foreground sm:table-cell">{t('broadcasts.list.colDate')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -270,7 +291,10 @@ export default function BroadcastsPage() {
                             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-yellow-400" />
                           </span>
                         )}
-                        {status.label}
+                        {t(
+                          BROADCAST_STATUS_KEYS[broadcast.status] ??
+                            'broadcasts.status.draft',
+                        )}
                       </span>
                     </TableCell>
                     <TableCell className="hidden text-muted-foreground sm:table-cell">

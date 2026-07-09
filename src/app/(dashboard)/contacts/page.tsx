@@ -54,6 +54,7 @@ import { ContactDetailView } from '@/components/contacts/contact-detail-view';
 import { ImportModal } from '@/components/contacts/import-modal';
 import { CustomFieldsManager } from '@/components/contacts/custom-fields-manager';
 import { useCan } from '@/hooks/use-can';
+import { useI18n } from '@/hooks/use-language';
 import { GatedButton } from '@/components/ui/gated-button';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -65,6 +66,7 @@ interface ContactWithTags extends Contact {
 
 export default function ContactsPage() {
   const supabase = createClient();
+  const { t, language } = useI18n();
   const canEdit = useCan('send-messages');
   const canEditSettings = useCan('edit-settings');
 
@@ -144,7 +146,7 @@ export default function ContactsPage() {
       });
       if (seq !== fetchSeq.current) return; // superseded by a newer fetch
       if (error) {
-        toast.error('Failed to load contacts');
+        toast.error(t('contacts.toast.loadFailed'));
         setLoading(false);
         return;
       }
@@ -166,7 +168,7 @@ export default function ContactsPage() {
       const { data, count: exactCount, error } = await query;
       if (seq !== fetchSeq.current) return; // superseded by a newer fetch
       if (error) {
-        toast.error('Failed to load contacts');
+        toast.error(t('contacts.toast.loadFailed'));
         setLoading(false);
         return;
       }
@@ -205,7 +207,7 @@ export default function ContactsPage() {
 
     setContacts(enriched);
     setLoading(false);
-  }, [supabase, page, search, selectedTagIds, tagsMap]);
+  }, [supabase, page, search, selectedTagIds, tagsMap, t]);
 
   // Load-once-on-mount-ish data fetches. Each setter inside runs
   // inside an async promise completion (Supabase await), not
@@ -257,9 +259,9 @@ export default function ContactsPage() {
       .eq('id', deleteTarget.id);
 
     if (error) {
-      toast.error('Failed to delete contact');
+      toast.error(t('contacts.toast.deleteFailed'));
     } else {
-      toast.success('Contact deleted');
+      toast.success(t('contacts.toast.deleted'));
       fetchContacts();
     }
 
@@ -301,9 +303,9 @@ export default function ContactsPage() {
     const { error } = await supabase.from('contacts').delete().in('id', ids);
 
     if (error) {
-      toast.error('Failed to delete contacts');
+      toast.error(t('contacts.toast.bulkDeleteFailed'));
     } else {
-      toast.success(`${ids.length} contact${ids.length === 1 ? '' : 's'} deleted`);
+      toast.success(t('contacts.toast.bulkDeleted', { count: ids.length }));
       setSelected(new Set());
       fetchContacts();
     }
@@ -342,9 +344,10 @@ export default function ContactsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Contacts</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('nav.contacts')}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage your contact list. {totalCount > 0 && `${totalCount} total contacts.`}
+            {t('contacts.subtitle')}{' '}
+            {totalCount > 0 && t('contacts.totalCount', { count: totalCount })}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -355,27 +358,27 @@ export default function ContactsPage() {
               className="border-border text-muted-foreground hover:bg-muted"
             >
               <SlidersHorizontal className="size-4" />
-              Custom fields
+              {t('contacts.customFields')}
             </Button>
           )}
           <GatedButton
             variant="outline"
             canAct={canEdit}
-            gateReason="add or import contacts"
+            gateReason={t('contacts.gate.addImport')}
             onClick={() => setImportOpen(true)}
             className="border-border text-muted-foreground hover:bg-muted"
           >
             <Upload className="size-4" />
-            Import
+            {t('contacts.importAction')}
           </GatedButton>
           <GatedButton
             canAct={canEdit}
-            gateReason="add or import contacts"
+            gateReason={t('contacts.gate.addImport')}
             onClick={openAddForm}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Plus className="size-4" />
-            Add Contact
+            {t('contacts.addContact')}
           </GatedButton>
         </div>
       </div>
@@ -393,7 +396,7 @@ export default function ContactsPage() {
                 // set shrinks/grows, page N may no longer be valid.
                 setPage(0);
               }}
-              placeholder="Search by name, phone, or email..."
+              placeholder={t('contacts.searchPlaceholder')}
               className="pl-8 bg-card border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
@@ -408,7 +411,7 @@ export default function ContactsPage() {
               }
             >
               <Filter className="size-4" />
-              Filter by tags
+              {t('contacts.filterByTags')}
               {selectedTagIds.length > 0 && (
                 <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
                   {selectedTagIds.length}
@@ -418,20 +421,20 @@ export default function ContactsPage() {
             <PopoverContent align="start" className="w-64 p-0">
               <div className="flex items-center justify-between px-3 py-2 border-b border-border">
                 <span className="text-sm font-medium text-popover-foreground">
-                  Filter by tags
+                  {t('contacts.filterByTags')}
                 </span>
                 {selectedTagIds.length > 0 && (
                   <button
                     onClick={clearTagFilters}
                     className="text-xs text-muted-foreground hover:text-foreground"
                   >
-                    Clear all
+                    {t('contacts.clearAll')}
                   </button>
                 )}
               </div>
               {allTags.length === 0 ? (
                 <p className="px-3 py-4 text-sm text-muted-foreground text-center">
-                  No tags yet.
+                  {t('contacts.noTagsYet')}
                 </p>
               ) : (
                 <div className="max-h-64 overflow-y-auto py-1">
@@ -443,7 +446,7 @@ export default function ContactsPage() {
                       <Checkbox
                         checked={selectedTagIds.includes(tag.id)}
                         onCheckedChange={() => toggleTagFilter(tag.id)}
-                        aria-label={`Filter by ${tag.name}`}
+                        aria-label={t('contacts.filterByTag', { name: tag.name })}
                       />
                       <span
                         className="size-2.5 shrink-0 rounded-full"
@@ -478,7 +481,7 @@ export default function ContactsPage() {
                   {tag.name}
                   <button
                     onClick={() => toggleTagFilter(id)}
-                    aria-label={`Remove ${tag.name} filter`}
+                    aria-label={t('contacts.removeTagFilter', { name: tag.name })}
                     className="hover:opacity-70"
                   >
                     <X className="size-3" />
@@ -490,7 +493,7 @@ export default function ContactsPage() {
               onClick={clearTagFilters}
               className="text-xs text-muted-foreground hover:text-foreground px-1"
             >
-              Clear all
+              {t('contacts.clearAll')}
             </button>
           </div>
         )}
@@ -501,7 +504,7 @@ export default function ContactsPage() {
         <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/40 px-4 py-2">
           <p className="text-sm text-foreground">
             <span className="font-medium">{selected.size}</span>{' '}
-            {selected.size === 1 ? 'contact' : 'contacts'} selected
+            {t('contacts.selectedSuffix', { count: selected.size })}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -510,17 +513,17 @@ export default function ContactsPage() {
               onClick={() => setSelected(new Set())}
               className="text-muted-foreground hover:text-foreground"
             >
-              Clear
+              {t('contacts.clear')}
             </Button>
             <GatedButton
               variant="destructive"
               size="sm"
               canAct={canEdit}
-              gateReason="delete contacts"
+              gateReason={t('contacts.gate.delete')}
               onClick={() => setBulkDeleteOpen(true)}
             >
               <Trash2 className="size-4" />
-              Delete selected
+              {t('contacts.deleteSelected')}
             </GatedButton>
           </div>
         </div>
@@ -537,15 +540,15 @@ export default function ContactsPage() {
                   indeterminate={!allOnPageSelected && someOnPageSelected}
                   onCheckedChange={toggleSelectAll}
                   disabled={contacts.length === 0}
-                  aria-label="Select all contacts on this page"
+                  aria-label={t('contacts.selectAllAria')}
                 />
               </TableHead>
-              <TableHead className="text-muted-foreground">Name</TableHead>
-              <TableHead className="text-muted-foreground">Phone</TableHead>
-              <TableHead className="text-muted-foreground hidden md:table-cell">Email</TableHead>
-              <TableHead className="text-muted-foreground hidden lg:table-cell">Company</TableHead>
-              <TableHead className="text-muted-foreground hidden md:table-cell">Tags</TableHead>
-              <TableHead className="text-muted-foreground hidden lg:table-cell">Created</TableHead>
+              <TableHead className="text-muted-foreground">{t('contacts.fields.name')}</TableHead>
+              <TableHead className="text-muted-foreground">{t('contacts.fields.phone')}</TableHead>
+              <TableHead className="text-muted-foreground hidden md:table-cell">{t('contacts.fields.email')}</TableHead>
+              <TableHead className="text-muted-foreground hidden lg:table-cell">{t('contacts.fields.company')}</TableHead>
+              <TableHead className="text-muted-foreground hidden md:table-cell">{t('contacts.fields.tags')}</TableHead>
+              <TableHead className="text-muted-foreground hidden lg:table-cell">{t('contacts.fields.created')}</TableHead>
               <TableHead className="text-muted-foreground w-12" />
             </TableRow>
           </TableHeader>
@@ -555,7 +558,7 @@ export default function ContactsPage() {
                 <TableCell colSpan={8} className="text-center py-12">
                   <div className="flex flex-col items-center gap-2">
                     <Loader2 className="size-6 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">Loading contacts...</p>
+                    <p className="text-sm text-muted-foreground">{t('contacts.loadingContacts')}</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -566,20 +569,20 @@ export default function ContactsPage() {
                     <Users className="size-8 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
                       {hasActiveFilters
-                        ? 'No contacts match your filters.'
-                        : 'No contacts yet.'}
+                        ? t('contacts.noMatchFilters')
+                        : t('contacts.noContactsYet')}
                     </p>
                     {!hasActiveFilters && (
                       <GatedButton
                         canAct={canEdit}
-                        gateReason="add or import contacts"
+                        gateReason={t('contacts.gate.addImport')}
                         variant="outline"
                         size="sm"
                         onClick={openAddForm}
                         className="mt-2 border-border text-muted-foreground hover:bg-muted"
                       >
                         <Plus className="size-3.5" />
-                        Add your first contact
+                        {t('contacts.addFirstContact')}
                       </GatedButton>
                     )}
                   </div>

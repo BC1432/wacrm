@@ -5,6 +5,7 @@ import { ChevronRight, Loader2 } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
+import { useI18n } from '@/hooks/use-language';
 import { useTheme } from '@/hooks/use-theme';
 import { THEMES } from '@/lib/themes';
 import { CURRENCIES } from '@/lib/currency';
@@ -35,6 +36,7 @@ export function SettingsOverview({
 }: {
   onSelect: (section: SettingsSection) => void;
 }) {
+  const { t } = useI18n();
   const { user, profile, accountId, accountRole, defaultCurrency, canManageMembers } =
     useAuth();
   const { mode, theme } = useTheme();
@@ -242,7 +244,7 @@ export function SettingsOverview({
         {roleMeta && RoleIcon ? (
           <SettingsChip variant={roleMeta.variant}>
             <RoleIcon />
-            {roleMeta.label}
+            {t(roleMeta.labelKey)}
           </SettingsChip>
         ) : null}
       </Card>
@@ -267,7 +269,7 @@ export function SettingsOverview({
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-foreground">
-                  {meta.label}
+                  {t(meta.labelKey)}
                 </span>
                 <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                   {loading ? (

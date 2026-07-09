@@ -8,9 +8,11 @@ import {
   normalizeConversations,
 } from "@/lib/inbox/conversations";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/hooks/use-language";
 import type { Conversation, ConversationStatus, Tag } from "@/types";
 import { Search, ChevronDown, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { es as esLocale } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -43,12 +45,14 @@ const STATUS_COLORS: Record<ConversationStatus, string> = {
 
 type InboxFilter = ConversationStatus | "all" | "unread";
 
-const FILTER_OPTIONS: { label: string; value: InboxFilter }[] = [
-  { label: "All", value: "all" },
-  { label: "Unread", value: "unread" },
-  { label: "Open", value: "open" },
-  { label: "Pending", value: "pending" },
-  { label: "Closed", value: "closed" },
+// `labelKey`s are resolved with `t()` at render time; `value`s are the
+// DB-facing filter/status identifiers and must stay untranslated.
+const FILTER_OPTIONS: { labelKey: string; value: InboxFilter }[] = [
+  { labelKey: "inbox.filter.all", value: "all" },
+  { labelKey: "inbox.filter.unread", value: "unread" },
+  { labelKey: "inbox.status.open", value: "open" },
+  { labelKey: "inbox.status.pending", value: "pending" },
+  { labelKey: "inbox.status.closed", value: "closed" },
 ];
 
 export function ConversationList({
@@ -58,6 +62,7 @@ export function ConversationList({
   onConversationsLoaded,
   resyncToken = 0,
 }: ConversationListProps) {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [loading, setLoading] = useState(true);
@@ -226,7 +231,7 @@ export function ConversationList({
           <Input
             value={search}
             onChange={handleSearchChange}
-            placeholder="Search conversations..."
+            placeholder={t("inbox.searchPlaceholder")}
             className="border-border bg-muted pl-9 text-sm text-foreground placeholder-muted-foreground focus:border-primary/50"
           />
         </div>
@@ -234,7 +239,7 @@ export function ConversationList({
         <div className="flex flex-wrap items-center gap-1">
           <DropdownMenu>
             <DropdownMenuTrigger className="inline-flex items-center justify-center h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted">
-                {activeFilter?.label ?? "All"}
+                {t(activeFilter?.labelKey ?? "inbox.filter.all")}
                 <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -252,7 +257,7 @@ export function ConversationList({
                       : "text-popover-foreground"
                   )}
                 >
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -268,7 +273,7 @@ export function ConversationList({
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                Tags
+                {t("inbox.tags")}
                 {selectedTagIds.length > 0 && (
                   <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
                     {selectedTagIds.length}
@@ -310,7 +315,7 @@ export function ConversationList({
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <span className="truncate">{selectedCompany ?? "Company"}</span>
+                <span className="truncate">{selectedCompany ?? t("inbox.company")}</span>
                 <ChevronDown className="h-3 w-3 shrink-0" />
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -326,7 +331,7 @@ export function ConversationList({
                       : "text-popover-foreground"
                   )}
                 >
-                  All companies
+                  {t("inbox.allCompanies")}
                 </DropdownMenuItem>
                 {companies.map((co) => (
                   <DropdownMenuItem
@@ -361,7 +366,7 @@ export function ConversationList({
                     className="h-1.5 w-1.5 shrink-0 rounded-full"
                     style={{ backgroundColor: tag?.color ?? "var(--muted-foreground)" }}
                   />
-                  <span className="max-w-24 truncate">{tag?.name ?? "Tag"}</span>
+                  <span className="max-w-24 truncate">{tag?.name ?? t("inbox.tag")}</span>
                   <X className="h-3 w-3" />
                 </button>
               );
@@ -379,7 +384,7 @@ export function ConversationList({
               onClick={clearContactFilters}
               className="px-1 text-[11px] text-muted-foreground hover:text-foreground"
             >
-              Clear all
+              {t("inbox.clearAll")}
             </button>
           </div>
         )}
@@ -398,7 +403,7 @@ export function ConversationList({
           </div>
         ) : filtered.length === 0 ? (
           <div className="px-4 py-12 text-center">
-            <p className="text-sm text-muted-foreground">No conversations found</p>
+            <p className="text-sm text-muted-foreground">{t("inbox.noConversationsFound")}</p>
           </div>
         ) : (
           <div className="flex flex-col">
@@ -428,6 +433,7 @@ function ConversationItem({
   isActive,
   onSelect,
 }: ConversationItemProps) {
+  const { t } = useI18n();
   const contact = conversation.contact;
   const displayName = contact?.name || contact?.phone || "Unknown";
   const initials = displayName.charAt(0).toUpperCase();
@@ -473,7 +479,7 @@ function ConversationItem({
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-2">
           <p className="truncate text-xs text-muted-foreground">
-            {conversation.last_message_text || "No messages yet"}
+            {conversation.last_message_text || t("inbox.thread.noMessages")}
           </p>
           <div className="flex shrink-0 items-center gap-1.5">
             {conversation.unread_count > 0 && (

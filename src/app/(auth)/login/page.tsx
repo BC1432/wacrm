@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/hooks/use-language";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,7 @@ export default function LoginPage() {
 }
 
 function LoginPageInner() {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   // Forwarded from `/join/<token>` when the visitor already has an
   // account. After a successful sign-in we send them to the join
@@ -78,12 +80,12 @@ function LoginPageInner() {
             )}
           </div>
           <CardTitle className="text-xl text-foreground">
-            {inviteToken ? "Sign in to accept" : "Welcome back"}
+            {inviteToken ? t("auth.signInToAccept") : t("auth.welcomeBack")}
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             {inviteToken
-              ? "Sign in and we'll take you to the invitation."
-              : "Sign in to your account"}
+              ? t("auth.signInToAcceptDescription")
+              : t("auth.signInToAccount")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -96,12 +98,12 @@ function LoginPageInner() {
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="email" className="text-muted-foreground">
-                Email
+                {t("auth.email")}
               </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("auth.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -112,19 +114,19 @@ function LoginPageInner() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-muted-foreground">
-                  Password
+                  {t("auth.password")}
                 </Label>
                 <Link
                   href="/forgot-password"
                   className="text-sm text-primary hover:text-primary/80"
                 >
-                  Forgot password?
+                  {t("auth.forgotPassword")}
                 </Link>
               </div>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t("auth.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -137,12 +139,12 @@ function LoginPageInner() {
               disabled={loading}
               className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? t("auth.signingIn") : t("auth.signIn")}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
+            {t("auth.noAccount")}{" "}
             <Link
               href={
                 inviteToken
@@ -151,7 +153,7 @@ function LoginPageInner() {
               }
               className="text-primary hover:text-primary/80"
             >
-              Create account
+              {t("auth.createAccount")}
             </Link>
           </p>
         </CardContent>
