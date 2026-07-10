@@ -1,4 +1,5 @@
 import { uploadResumableMedia } from '@/lib/whatsapp/meta-api'
+import { resolveMetaMediaUrl } from '@/lib/storage/private-media'
 import type { TemplatePayload } from '@/lib/whatsapp/template-validators'
 
 /**
@@ -37,7 +38,7 @@ export async function ensureImageHeaderHandle(
   // and for a manually-pasted public link).
   let res: Response
   try {
-    res = await fetch(payload.header_media_url)
+    res = await fetch(await resolveMetaMediaUrl(payload.header_media_url))
   } catch {
     throw new Error('Could not fetch the header image URL. Make sure it is publicly reachable.')
   }

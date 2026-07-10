@@ -37,6 +37,7 @@ import {
 } from '@/lib/whatsapp/phone-utils';
 import type { MessageTemplate } from '@/types';
 import { isMessageTemplate } from '@/lib/whatsapp/template-row-guard';
+import { resolveMetaMediaUrl } from '@/lib/storage/private-media';
 
 export const MEDIA_KINDS = ['image', 'video', 'document', 'audio'] as const;
 export const VALID_MESSAGE_TYPES = [
@@ -188,6 +189,7 @@ export async function sendMessageToConversation(
   validateSendMessageParams({ messageType, contentText, mediaUrl, templateName });
 
   const isMediaKind = (MEDIA_KINDS as readonly string[]).includes(messageType);
+  const metaMediaUrl = isMediaKind && mediaUrl ? await resolveMetaMediaUrl(mediaUrl) : null;
 
   // Conversation + contact, account-scoped.
   const { data: conversation, error: convError } = await db
@@ -322,7 +324,7 @@ export async function sendMessageToConversation(
         accessToken,
         to: phone,
         kind: messageType as MediaKind,
-        link: mediaUrl!,
+        link: metaMediaUrl!,
         caption: contentText || undefined,
         filename: filename || undefined,
         contextMessageId,

@@ -21,6 +21,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/flows/admin-client';
 
 export interface RateLimitOptions {
   /** Max requests allowed in `windowMs`. */
@@ -57,7 +58,7 @@ function sweepExpired(now: number) {
   }
 }
 
-export function checkRateLimit(
+function checkLocalRateLimit(
   key: string,
   { limit, windowMs }: RateLimitOptions,
 ): RateLimitResult {
@@ -87,6 +88,40 @@ export function checkRateLimit(
     reset: entry.resetAt,
     limit,
   };
+}
+
+export async function checkRateLimit(
+  key: string,
+  options: RateLimitOptions,
+): Promise<RateLimitResult> {
+  if (process.env.NODE_ENV === 'test' || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return checkLocalRateLimit(key, options);
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin().rpc('check_rate_limit', {
+      p_key: key,
+      p_limit: options.limit,
+      p_window_ms: options.windowMs,
+    });
+    const row = Array.isArray(data) ? data[0] : data;
+    if (error || !row) {
+      console.error('[rate-limit] shared limiter failed:', error?.message);
+      return checkLocalRateLimit(key, options);
+    }
+    return {
+      success: Boolean(row.success),
+      remaining: Number(row.remaining),
+      reset: new Date(row.reset_at as string).getTime(),
+      limit: Number(row.limit_value),
+    };
+  } catch (err) {
+    console.error(
+      '[rate-limit] shared limiter threw:',
+      err instanceof Error ? err.message : err,
+    );
+    return checkLocalRateLimit(key, options);
+  }
 }
 
 /**

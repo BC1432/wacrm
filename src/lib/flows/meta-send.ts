@@ -15,6 +15,7 @@ import {
   isRecipientNotAllowedError,
 } from '@/lib/whatsapp/phone-utils'
 import { supabaseAdmin } from './admin-client'
+import { resolveMetaMediaUrl } from '@/lib/storage/private-media'
 
 // ------------------------------------------------------------
 // Flows-side Meta sender (interactive variants).
@@ -196,6 +197,7 @@ export async function engineSendMedia(
   }
 
   const accessToken = decrypt(config.access_token)
+  const metaLink = await resolveMetaMediaUrl(args.link)
 
   const attempt = async (phone: string): Promise<string> => {
     const r = await sendMediaMessage({
@@ -203,7 +205,7 @@ export async function engineSendMedia(
       accessToken,
       to: phone,
       kind: args.kind,
-      link: args.link,
+      link: metaLink,
       caption: args.caption,
       filename: args.filename,
     })

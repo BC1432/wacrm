@@ -33,6 +33,9 @@ export const MEDIA_MAX_BYTES_BY_KIND = {
   document: 16 * 1024 * 1024,
 } as const;
 
+/** One week: long enough for UI previews, short enough to avoid permanent public links. */
+export const MEDIA_SIGNED_URL_TTL_SECONDS = 7 * 24 * 60 * 60;
+
 /**
  * Build the account-scoped object path for an upload. Pure + exported so
  * it can be unit-tested without a Supabase client.
@@ -62,14 +65,14 @@ export function buildMediaPath(
 }
 
 export interface UploadAccountMediaResult {
-  /** Public URL Meta can fetch at send time. */
+  /** Time-limited signed URL for preview / immediate Meta fetch. */
   publicUrl: string;
   /** Storage object path (account-scoped). */
   path: string;
 }
 
 /**
- * Upload a file to an account-scoped Storage bucket and return its public
+ * Upload a file to an account-scoped Storage bucket and return a signed
  * URL. Throws with a user-facing message on auth / account-resolution /
  * upload failure — callers surface it via a toast.
  *
@@ -110,11 +113,14 @@ export async function uploadAccountMedia(
   });
   if (upErr) throw new Error(upErr.message);
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(bucket).getPublicUrl(path);
+  const { data: signed, error: signErr } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(path, MEDIA_SIGNED_URL_TTL_SECONDS);
+  if (signErr || !signed?.signedUrl) {
+    throw new Error(signErr?.message ?? "Could not sign uploaded media URL.");
+  }
 
-  return { publicUrl, path };
+  return { publicUrl: signed.signedUrl, path };
 }
 
 /**
