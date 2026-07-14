@@ -1,4 +1,4 @@
-import type { AccountRole } from "@/lib/auth/roles";
+import type { AccountRole } from '@/lib/auth/roles';
 
 export interface Profile {
   id: string;
@@ -77,7 +77,7 @@ export interface AccountInvitation {
   id: string;
   account_id: string;
   /** Roles offered via invite — owner is never offered. */
-  role: Exclude<AccountRole, "owner">;
+  role: Exclude<AccountRole, 'owner'>;
   created_by_user_id: string | null;
   label: string | null;
   created_at: string;
@@ -147,6 +147,9 @@ export interface ContactNote {
 
 export type ConversationStatus = 'open' | 'pending' | 'closed';
 
+export type MessagingChannel =
+  'whatsapp' | 'telegram' | 'signal' | 'instagram' | 'matrix' | 'xmpp';
+
 export interface Conversation {
   id: string;
   user_id: string;
@@ -158,6 +161,12 @@ export interface Conversation {
   unread_count: number;
   created_at: string;
   updated_at: string;
+  /** Defaults to WhatsApp for rows created before migration 032. */
+  channel?: MessagingChannel;
+  /** Delivery adapter. WhatsApp can be native or bridged through Matrix. */
+  transport?: 'native' | 'matrix' | 'xmpp';
+  external_room_id?: string;
+  external_participant_id?: string;
   contact?: Contact;
 }
 
@@ -194,7 +203,8 @@ export type ContentType =
   | 'template'
   /** Customer tapped a reply button or list row on a message we sent. */
   | 'interactive';
-export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
+export type MessageStatus =
+  'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 
 export interface Message {
   id: string;
@@ -208,6 +218,8 @@ export interface Message {
   message_id?: string;
   status: MessageStatus;
   created_at: string;
+  channel?: MessagingChannel;
+  external_event_id?: string;
   reply_to_message_id?: string;
   /**
    * Only set when `content_type === 'interactive'` — the stable id of
@@ -342,8 +354,10 @@ export interface Deal {
   assignee?: Profile;
 }
 
-export type BroadcastStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
-export type RecipientStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'replied' | 'failed';
+export type BroadcastStatus =
+  'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
+export type RecipientStatus =
+  'pending' | 'sent' | 'delivered' | 'read' | 'replied' | 'failed';
 
 export interface Broadcast {
   id: string;
@@ -485,10 +499,7 @@ export interface WaitStepConfig {
 }
 
 export type ConditionSubject =
-  | 'contact_field'
-  | 'tag_presence'
-  | 'message_content'
-  | 'time_of_day';
+  'contact_field' | 'tag_presence' | 'message_content' | 'time_of_day';
 
 export interface ConditionStepConfig {
   subject: ConditionSubject;

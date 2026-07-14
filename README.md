@@ -138,6 +138,7 @@ Full self-host documentation — Supabase migrations, WhatsApp Business
 API config, and production deploy — lives at
 **[wacrm.tech/docs](https://wacrm.tech/docs)**
 (source: [ArnasDon/wacrm-site](https://github.com/ArnasDon/wacrm-site)).
+The local repo index is [docs/README.md](./docs/README.md).
 
 Key pages:
 - [Getting started](https://wacrm.tech/docs/getting-started)
@@ -160,7 +161,7 @@ This is a template, not a collaborative product — the expected flow is
 fork → customise → deploy, **not** upstream contribution. Bug reports
 and security issues are welcome; feature PRs often belong in your fork
 rather than here. Details in
-[`CONTRIBUTING.md`](./CONTRIBUTING.md) and
+[`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) and
 [`.github/SECURITY.md`](./.github/SECURITY.md).
 
 ## License

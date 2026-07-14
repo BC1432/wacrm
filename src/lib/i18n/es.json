@@ -12,7 +12,9 @@
     "beta": "Beta",
     "user": "Usuario",
     "error": "Ocurrió un error",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "refresh": "Actualizar",
+    "add": "Añadir"
   },
   "nav": {
     "dashboard": "Panel",
@@ -366,6 +368,9 @@
       "all": "Todas",
       "unread": "Sin leer"
     },
+    "channel": {
+      "all": "Todos los canales"
+    },
     "status": {
       "open": "Abierta",
       "pending": "Pendiente",
@@ -587,6 +592,7 @@
         "security": "Seguridad",
         "appearance": "Apariencia",
         "whatsapp": "WhatsApp",
+        "omnichannel": "Omnicanal",
         "templates": "Plantillas",
         "fields": "Campos y etiquetas",
         "deals": "Negocios",
@@ -602,6 +608,30 @@
       "title": "Campos personalizados",
       "description": "Crea campos estructurados para contactos y automatizaciones.",
       "adminChip": "Admin"
+    },
+    "omnichannel": {
+      "title": "Mensajería omnicanal",
+      "description": "Conecta este espacio a un núcleo Matrix y registra sus bridges de mensajería.",
+      "homeserver": "URL del homeserver",
+      "botUser": "ID del usuario bot",
+      "accessToken": "Token de acceso del bot",
+      "replaceToken": "Introduce nuevamente el token para actualizar",
+      "syncEnabled": "Activar sincronización Matrix",
+      "syncHint": "El endpoint programado de Matrix importará y entregará mensajes.",
+      "lastSync": "Última sincronización",
+      "never": "Nunca",
+      "verifySave": "Verificar y guardar",
+      "saved": "Conexión Matrix guardada",
+      "loadFailed": "No se pudo cargar la configuración Matrix",
+      "saveFailed": "No se pudo guardar la configuración Matrix",
+      "bridges": "Conexiones de bridges",
+      "bridgesHint": "Registra las salas de gestión de mautrix usadas para aprovisionar cada canal.",
+      "bridgeLabel": "Nombre de la conexión",
+      "managementRoom": "ID de sala de gestión (opcional)",
+      "noManagementRoom": "No hay sala de gestión registrada",
+      "noBridges": "No se han registrado conexiones de bridges.",
+      "bridgeFailed": "No se pudo añadir el bridge",
+      "bridgeDeleteFailed": "No se pudo eliminar el bridge"
     }
   }
 }

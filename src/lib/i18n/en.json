@@ -12,7 +12,9 @@
     "beta": "Beta",
     "user": "User",
     "error": "Something went wrong",
-    "retry": "Retry"
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "add": "Add"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -366,6 +368,9 @@
       "all": "All",
       "unread": "Unread"
     },
+    "channel": {
+      "all": "All channels"
+    },
     "status": {
       "open": "Open",
       "pending": "Pending",
@@ -587,6 +592,7 @@
         "security": "Security",
         "appearance": "Appearance",
         "whatsapp": "WhatsApp",
+        "omnichannel": "Omnichannel",
         "templates": "Templates",
         "fields": "Fields and tags",
         "deals": "Deals",
@@ -602,6 +608,30 @@
       "title": "Custom fields",
       "description": "Create structured fields for contacts and automations.",
       "adminChip": "Admin"
+    },
+    "omnichannel": {
+      "title": "Omnichannel messaging",
+      "description": "Connect this workspace to a Matrix core and track its messaging bridges.",
+      "homeserver": "Homeserver URL",
+      "botUser": "Bot user ID",
+      "accessToken": "Bot access token",
+      "replaceToken": "Enter the token again to update settings",
+      "syncEnabled": "Enable Matrix synchronization",
+      "syncHint": "The scheduled Matrix endpoint will import and deliver messages.",
+      "lastSync": "Last synchronization",
+      "never": "Never",
+      "verifySave": "Verify and save",
+      "saved": "Matrix connection saved",
+      "loadFailed": "Could not load Matrix settings",
+      "saveFailed": "Could not save Matrix settings",
+      "bridges": "Bridge connections",
+      "bridgesHint": "Track the mautrix management rooms used to provision each channel.",
+      "bridgeLabel": "Connection label",
+      "managementRoom": "Management room ID (optional)",
+      "noManagementRoom": "No management room recorded",
+      "noBridges": "No bridge connections have been registered.",
+      "bridgeFailed": "Could not add the bridge",
+      "bridgeDeleteFailed": "Could not remove the bridge"
     }
   }
 }

@@ -4,7 +4,7 @@ This is a **template repository**, not a collaborative product. The
 expected flow is:
 
 1. **Fork** it to your own GitHub account or organisation.
-2. **Deploy** the fork — see [`docs/`](./docs/README.md).
+2. **Deploy** the fork — see the [docs index](./README.md).
 3. **Customise** your fork. Rebrand, add the features you need, remove
    the ones you don't, swap hosting, change the schema.
 
@@ -27,7 +27,7 @@ npm run dev
 ```
 
 Full setup (Supabase migrations, WhatsApp Business API, deploy) lives in
-[`docs/`](./docs/README.md).
+[the docs index](./README.md).
 
 ## Keeping your fork up to date
 
@@ -57,7 +57,7 @@ local / other), and logs will get to a fix fastest.
 ## Reporting security issues
 
 **Do not file security issues publicly.** Follow the private flow in
-[SECURITY.md](./.github/SECURITY.md).
+[SECURITY.md](../.github/SECURITY.md).
 
 ## Upstream pull requests
 
@@ -98,7 +98,7 @@ closed — open the issue first to align.
 - Rebrand. The "CRM Template for WhatsApp" name, favicon, and
   `wacrm.tech` URL belong to the upstream project; please swap them
   for your own before putting your deployment in front of users.
-- Keep the MIT [`LICENSE`](./LICENSE) file — that's how the template's
+- Keep the MIT [`LICENSE`](../LICENSE) file — that's how the template's
   permissions travel with the code. Attribution in a `README` section
   is appreciated but not required.
 - You are free to re-license additions to your fork however you like.

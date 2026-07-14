@@ -5,6 +5,7 @@ import {
   LayoutGrid,
   Palette,
   PlugZap,
+  RadioTower,
   Shield,
   Tags,
   User,
@@ -26,6 +27,7 @@ export const SETTINGS_SECTIONS = [
   'security',
   'appearance',
   'whatsapp',
+  'omnichannel',
   'templates',
   'fields',
   'deals',
@@ -44,22 +46,83 @@ export interface SectionMeta {
   labelKey: string;
   icon: LucideIcon;
   group: 'top' | 'account' | 'workspace';
+  adminOnly?: boolean;
 }
 
 export const SECTION_META: Record<SettingsSection, SectionMeta> = {
-  overview: { id: 'overview', labelKey: 'settings.rail.section.overview', icon: LayoutGrid, group: 'top' },
-  profile: { id: 'profile', labelKey: 'settings.rail.section.profile', icon: User, group: 'account' },
-  security: { id: 'security', labelKey: 'settings.rail.section.security', icon: Shield, group: 'account' },
-  appearance: { id: 'appearance', labelKey: 'settings.rail.section.appearance', icon: Palette, group: 'account' },
-  whatsapp: { id: 'whatsapp', labelKey: 'settings.rail.section.whatsapp', icon: PlugZap, group: 'workspace' },
-  templates: { id: 'templates', labelKey: 'settings.rail.section.templates', icon: FileText, group: 'workspace' },
-  fields: { id: 'fields', labelKey: 'settings.rail.section.fields', icon: Tags, group: 'workspace' },
-  deals: { id: 'deals', labelKey: 'settings.rail.section.deals', icon: Coins, group: 'workspace' },
-  members: { id: 'members', labelKey: 'settings.rail.section.members', icon: UsersRound, group: 'workspace' },
-  api: { id: 'api', labelKey: 'settings.rail.section.api', icon: KeyRound, group: 'workspace' },
+  overview: {
+    id: 'overview',
+    labelKey: 'settings.rail.section.overview',
+    icon: LayoutGrid,
+    group: 'top',
+  },
+  profile: {
+    id: 'profile',
+    labelKey: 'settings.rail.section.profile',
+    icon: User,
+    group: 'account',
+  },
+  security: {
+    id: 'security',
+    labelKey: 'settings.rail.section.security',
+    icon: Shield,
+    group: 'account',
+  },
+  appearance: {
+    id: 'appearance',
+    labelKey: 'settings.rail.section.appearance',
+    icon: Palette,
+    group: 'account',
+  },
+  whatsapp: {
+    id: 'whatsapp',
+    labelKey: 'settings.rail.section.whatsapp',
+    icon: PlugZap,
+    group: 'workspace',
+  },
+  omnichannel: {
+    id: 'omnichannel',
+    labelKey: 'settings.rail.section.omnichannel',
+    icon: RadioTower,
+    group: 'workspace',
+    adminOnly: true,
+  },
+  templates: {
+    id: 'templates',
+    labelKey: 'settings.rail.section.templates',
+    icon: FileText,
+    group: 'workspace',
+  },
+  fields: {
+    id: 'fields',
+    labelKey: 'settings.rail.section.fields',
+    icon: Tags,
+    group: 'workspace',
+  },
+  deals: {
+    id: 'deals',
+    labelKey: 'settings.rail.section.deals',
+    icon: Coins,
+    group: 'workspace',
+  },
+  members: {
+    id: 'members',
+    labelKey: 'settings.rail.section.members',
+    icon: UsersRound,
+    group: 'workspace',
+  },
+  api: {
+    id: 'api',
+    labelKey: 'settings.rail.section.api',
+    icon: KeyRound,
+    group: 'workspace',
+  },
 };
 
-export const RAIL_GROUPS: { labelKey: string | null; group: SectionMeta['group'] }[] = [
+export const RAIL_GROUPS: {
+  labelKey: string | null;
+  group: SectionMeta['group'];
+}[] = [
   { labelKey: null, group: 'top' },
   { labelKey: 'settings.rail.group.account', group: 'account' },
   { labelKey: 'settings.rail.group.workspace', group: 'workspace' },

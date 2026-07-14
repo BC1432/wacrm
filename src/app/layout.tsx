@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { LanguageProvider } from "@/hooks/use-language";
@@ -19,11 +17,6 @@ import {
   LANGUAGE_STORAGE_KEY,
   LANGUAGES,
 } from "@/lib/i18n/config";
-
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: {
@@ -101,7 +94,7 @@ export default async function RootLayout({
       lang="en"
       data-theme={DEFAULT_THEME}
       data-mode={DEFAULT_MODE}
-      className={`${inter.variable} h-full antialiased`}
+      className="h-full antialiased"
       // The `theme-boot` script below rewrites `data-theme` and
       // `data-mode` on <html> from localStorage before React hydrates,
       // so for any non-default choice the client DOM intentionally
@@ -112,10 +105,13 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script
+        <script
           id="theme-boot"
           nonce={nonce}
-          strategy="beforeInteractive"
+          // Browsers intentionally hide script nonce attributes from
+          // getAttribute(), so React can see the hydrated DOM as
+          // nonce="" even when the server sent the correct nonce.
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }}
         />
       </head>

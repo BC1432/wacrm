@@ -17,6 +17,7 @@ import { FieldsAndTagsPanel } from '@/components/settings/fields-and-tags-panel'
 import { DealsSettings } from '@/components/settings/deals-settings';
 import { MembersTab } from '@/components/settings/members-tab';
 import { ApiKeysSettings } from '@/components/settings/api-keys-settings';
+import { OmnichannelSettings } from '@/components/settings/omnichannel-settings';
 import {
   resolveSection,
   type SettingsSection,
@@ -25,7 +26,7 @@ import {
 export default function SettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { defaultCurrency } = useAuth();
+  const { defaultCurrency, canEditSettings } = useAuth();
   const { mode } = useTheme();
   const { t } = useI18n();
 
@@ -33,7 +34,11 @@ export default function SettingsPage() {
   // section — deep-linkable, and it keeps the existing links in the
   // app sidebar/header working. Legacy tab values (tags, custom-fields)
   // resolve onto their new home; unknown/empty → the Overview landing.
-  const section = resolveSection(searchParams.get('tab'));
+  const requestedSection = resolveSection(searchParams.get('tab'));
+  const section =
+    requestedSection === 'omnichannel' && !canEditSettings
+      ? 'overview'
+      : requestedSection;
 
   const go = (next: SettingsSection) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -49,7 +54,7 @@ export default function SettingsPage() {
       appearance: t(`appearance.${mode}`),
       deals: defaultCurrency,
     }),
-    [mode, defaultCurrency, t],
+    [mode, defaultCurrency, t]
   );
 
   const panel: Record<SettingsSection, ReactNode> = {
@@ -58,6 +63,7 @@ export default function SettingsPage() {
     security: <SecurityPanel />,
     appearance: <AppearancePanel />,
     whatsapp: <WhatsAppConfig />,
+    omnichannel: <OmnichannelSettings />,
     templates: <TemplateManager />,
     fields: <FieldsAndTagsPanel />,
     deals: <DealsSettings />,
@@ -68,10 +74,10 @@ export default function SettingsPage() {
   return (
     <div>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-foreground text-2xl font-bold tracking-tight">
           {t('settings.page.title')}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           {t('settings.page.description')}
         </p>
       </div>

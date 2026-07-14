@@ -2,7 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "wacrm",
   "main": ".open-next/worker.js",
-  "compatibility_date": "2026-07-09",
+  "compatibility_date": "2026-07-10",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".open-next/assets",
@@ -10,5 +10,59 @@
   },
   "observability": {
     "enabled": true,
+  },
+  "routes": [
+    {
+      "pattern": "crm.evento.do",
+      "custom_domain": true,
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wacrm",
+      "database_id": "a705b882-4a2c-46f7-8744-01e27a38880a",
+      "migrations_dir": "cloudflare/migrations",
+    },
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSIONS",
+      "id": "fd699bd87fc6444092c22ae48d0b4d20",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "wacrm-media",
+    },
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "WHATSAPP_EVENTS",
+        "queue": "wacrm-whatsapp-events",
+      },
+      {
+        "binding": "OUTBOUND_MESSAGES",
+        "queue": "wacrm-outbound-messages",
+      },
+      {
+        "binding": "EMAIL_EVENTS",
+        "queue": "wacrm-email-events",
+      },
+    ],
+  },
+  "send_email": [
+    {
+      "name": "EMAIL",
+    },
+  ],
+  "vars": {
+    "AUTH_COOKIE_NAME": "wacrm_session",
+    "APP_PUBLIC_URL": "https://crm.evento.do",
+    "AUTH_EMAIL_FROM": "no-reply@crm.evento.do",
+    "MEDIA_BUCKET_PUBLIC_BASE_URL": "",
+    "APP_ENV": "production",
   },
 }

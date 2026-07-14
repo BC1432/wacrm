@@ -22,6 +22,7 @@ function buildCsp(nonce: string): string {
 export async function middleware(request: NextRequest) {
   const nonce = crypto.randomUUID()
   const csp = buildCsp(nonce)
+  const authPagePaths = ['/login', '/signup', '/forgot-password', '/reset-password']
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
   requestHeaders.set('Content-Security-Policy', csp)
@@ -30,6 +31,9 @@ export async function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   })
   supabaseResponse.headers.set('Content-Security-Policy', csp)
+  if (authPagePaths.includes(request.nextUrl.pathname)) {
+    supabaseResponse.headers.set('Cache-Control', 'no-store, max-age=0')
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -45,6 +49,9 @@ export async function middleware(request: NextRequest) {
             request: { headers: requestHeaders },
           })
           supabaseResponse.headers.set('Content-Security-Policy', csp)
+          if (authPagePaths.includes(request.nextUrl.pathname)) {
+            supabaseResponse.headers.set('Cache-Control', 'no-store, max-age=0')
+          }
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
