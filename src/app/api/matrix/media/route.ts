@@ -31,9 +31,15 @@ export async function GET(request: Request) {
     const response = await fetch(mediaUrl, {
       headers: { Authorization: `Bearer ${decrypt(config.access_token)}` },
       cache: 'no-store',
-      redirect: 'error',
+      redirect: 'manual',
       signal: AbortSignal.timeout(20_000),
     });
+    if (response.status >= 300 && response.status < 400) {
+      return NextResponse.json(
+        { error: 'Matrix media request returned a redirect' },
+        { status: 400 }
+      );
+    }
     if (!response.ok || !response.body) {
       return NextResponse.json(
         { error: 'Matrix media is unavailable' },

@@ -12,6 +12,7 @@ type D1Value = string | number | null;
 export interface D1PreparedStatementLike<T = unknown> {
   bind(...values: D1Value[]): D1PreparedStatementLike<T>;
   first(): Promise<T | null>;
+  all(): Promise<{ results: T[] }>;
   run(): Promise<unknown>;
 }
 

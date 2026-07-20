@@ -131,9 +131,12 @@ async function syncConfig(config: MatrixConfigRow): Promise<number> {
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${decrypt(config.access_token)}` },
     cache: 'no-store',
-    redirect: 'error',
+    redirect: 'manual',
     signal: AbortSignal.timeout(25_000),
   });
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error(`Matrix sync failed: Redirect received (HTTP ${response.status})`);
+  }
   if (!response.ok)
     throw new Error(`Matrix sync failed with HTTP ${response.status}`);
   const payload = (await response.json()) as MatrixSyncResponse;

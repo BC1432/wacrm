@@ -28,6 +28,10 @@ class MemoryStatement<T = unknown> implements D1PreparedStatementLike<T> {
     return Promise.resolve(this.db.first<T>(this.query, this.values));
   }
 
+  all(): Promise<{ results: T[] }> {
+    return Promise.resolve({ results: [] });
+  }
+
   run(): Promise<unknown> {
     this.db.run(this.query, this.values);
     return Promise.resolve({ success: true });

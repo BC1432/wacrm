@@ -30,6 +30,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/server";
 import { hasMinRole, isAccountRole, type AccountRole } from "./roles";
+import { getWacrmCloudflareEnv, requireD1 } from "@/lib/cloudflare/env";
+import type { D1DatabaseLike } from "@/lib/cloudflare/auth-store";
 
 // ------------------------------------------------------------
 // Errors
@@ -81,6 +83,8 @@ export function toErrorResponse(err: unknown): NextResponse {
 export interface AccountContext {
   /** Supabase SSR client, RLS scoped to the calling user. */
   supabase: SupabaseClient;
+  /** Cloudflare D1 database client */
+  db: D1DatabaseLike;
   /** `auth.uid()` for the caller. Always defined when this resolves. */
   userId: string;
   /** Caller's account_id from their profile row. */
@@ -158,13 +162,57 @@ export async function getCurrentAccount(): Promise<AccountContext> {
     throw new ForbiddenError("Could not load account context");
   }
   if (!account) {
-    // account_id points at no readable account row — orphaned profile
-    // or an RLS gap. Same "can't scope this user" outcome as above.
     throw new ForbiddenError("Profile is not linked to an account");
+  }
+  const env = await getWacrmCloudflareEnv();
+  const db = requireD1(env);
+
+  try {
+    const d1User = await db
+      .prepare("SELECT id FROM auth_users WHERE id = ?")
+      .bind(user.id)
+      .first();
+
+    if (!d1User) {
+      await db
+        .prepare(
+          `INSERT OR IGNORE INTO auth_users (id, email, password_hash)
+           VALUES (?, ?, '')`
+        )
+        .bind(user.id, user.email || "")
+        .run();
+
+      await db
+        .prepare(
+          `INSERT OR IGNORE INTO accounts (id, name, owner_user_id)
+           VALUES (?, ?, ?)`
+        )
+        .bind(account.id, account.name, user.id)
+        .run();
+
+      const profileId = `prof_${user.id.replace(/[^a-zA-Z0-9]/g, "").slice(0, 12)}`;
+      await db
+        .prepare(
+          `INSERT OR IGNORE INTO profiles (id, user_id, account_id, account_role, full_name, email)
+           VALUES (?, ?, ?, ?, ?, ?)`
+        )
+        .bind(
+          profileId,
+          user.id,
+          account.id,
+          data.account_role,
+          (user.user_metadata?.full_name as string | undefined) || user.email || "",
+          user.email || ""
+        )
+        .run();
+    }
+  } catch (syncErr) {
+    console.error("[getCurrentAccount] failed to sync user/account to D1:", syncErr);
   }
 
   return {
     supabase,
+    db,
     userId: user.id,
     accountId: data.account_id,
     role: data.account_role,

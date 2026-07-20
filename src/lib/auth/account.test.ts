@@ -66,6 +66,18 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: () => createClient(),
 }));
 
+vi.mock("@/lib/cloudflare/env", () => ({
+  getWacrmCloudflareEnv: vi.fn().mockResolvedValue({}),
+  requireD1: vi.fn().mockReturnValue({
+    prepare: vi.fn().mockReturnValue({
+      bind: vi.fn().mockReturnThis(),
+      first: vi.fn().mockResolvedValue({ id: "user-1" }),
+      all: vi.fn().mockResolvedValue({ results: [] }),
+      run: vi.fn().mockResolvedValue({}),
+    }),
+  }),
+}));
+
 const { getCurrentAccount, UnauthorizedError, ForbiddenError } = await import(
   "./account"
 );

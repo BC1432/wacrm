@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { cloudflareLogin } from "@/lib/cloudflare/auth-client";
 import { useI18n } from "@/hooks/use-language";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,28 +43,22 @@ function LoginPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
+    try {
+      await cloudflareLogin(email, password);
+      if (inviteToken) {
+        router.push(`/join/${encodeURIComponent(inviteToken)}`);
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
       setLoading(false);
-      return;
-    }
-
-    if (inviteToken) {
-      router.push(`/join/${encodeURIComponent(inviteToken)}`);
-    } else {
-      router.push("/dashboard");
     }
   };
 
